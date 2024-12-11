@@ -41,7 +41,54 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product added successfully!']);
     }
 
+// (PUT /products/{id})
+    public function update(Request $request, $id)
+    {
+        $filePath = storage_path('data/products.json');
 
+        if (!File::exists($filePath)) {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+
+        $products = json_decode(File::get($filePath), true);
+
+        if (!isset($products[$id])) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        $products[$id] = array_merge($products[$id], [
+            'product_name' => $request->input('productName'),
+            'quantity' => $request->input('quantity'),
+            'price' => $request->input('price'),
+            'total_value' => $request->input('quantity') * $request->input('price'),
+        ]);
+
+        File::put($filePath, json_encode($products, JSON_PRETTY_PRINT));
+
+        return response()->json(['message' => 'Product updated successfully!']);
+    }
+
+    // (DELETE /products/{id})
+    public function destroy($id)
+    {
+        $filePath = storage_path('data/products.json');
+
+        if (!File::exists($filePath)) {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+
+        $products = json_decode(File::get($filePath), true);
+
+        if (!isset($products[$id])) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        array_splice($products, $id, 1);
+
+        File::put($filePath, json_encode($products, JSON_PRETTY_PRINT));
+
+        return response()->json(['message' => 'Product deleted successfully!']);
+    }
 
     // (GET /products/{id})
     public function show($id)

@@ -60,6 +60,8 @@
 <script>
     $(document).ready(function () {
 
+
+        // handle fetching product
         function fetchProducts() {
             axios.get('/products').then(function (response) {
                 const products = response.data;
@@ -95,7 +97,7 @@
 
         fetchProducts();
 
-        // Handle form submission
+        // handle form submission
         $('#productForm').submit(function (e) {
             e.preventDefault();
 
@@ -107,7 +109,7 @@
             const index = $('#productForm button[type="submit"]').data('id');
 
             if (index === undefined) {
-                // Create new product
+                // create new product
                 axios.post('/products', {
                     productName,
                     quantity,
@@ -120,7 +122,7 @@
                     console.log(error);
                 });
             } else {
-                // Update existing product
+                // update existing product
                 axios.put(`/products/${index}`, {
                     productName,
                     quantity,
@@ -136,6 +138,34 @@
             }
         });
 
+
+        // handle product deletion
+        $(document).on('click', '.delete-btn', function () {
+            const id = $(this).data('id');
+
+            axios.delete(`/products/${id}`).then(function () {
+                fetchProducts();
+            }).catch(function (error) {
+                console.log(error);
+            });
+        });
+
+        // handle product editing
+        $(document).on('click', '.edit-btn', function () {
+            const id = $(this).data('id');
+            const row = $(this).closest('tr');
+
+            const productName = row.find('td:eq(0)').text();
+            const quantity = row.find('td:eq(1)').text();
+            const price = row.find('td:eq(2)').text();
+
+            $('#productName').val(productName);
+            $('#quantity').val(quantity);
+            $('#price').val(price);
+
+            // change the submit button to "Update"
+            $('#productForm button[type="submit"]').text('Update').data('id', id);
+        });
 
     });
 </script>
