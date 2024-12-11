@@ -57,4 +57,88 @@
 <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
 
 
+<script>
+    $(document).ready(function () {
+
+        function fetchProducts() {
+            axios.get('/products').then(function (response) {
+                const products = response.data;
+                let totalValue = 0;
+                const tableBody = $('#productTable tbody');
+
+                tableBody.empty();
+
+                products.forEach(function (product, index) {
+                    totalValue += product.total_value;
+
+                    const row = `
+                        <tr>
+                            <td>${product.product_name}</td>
+                            <td>${product.quantity}</td>
+                            <td>${product.price}</td>
+                            <td>${new Date(product.submitted_at).toLocaleString()}</td>
+                            <td>${product.total_value}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm edit-btn" data-id="${index}">Edit</button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="${index}">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.append(row);
+                });
+
+                $('#totalValue').text(totalValue);
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+
+        fetchProducts();
+
+        // Handle form submission
+        $('#productForm').submit(function (e) {
+            e.preventDefault();
+
+            const productName = $('#productName').val();
+            const quantity = $('#quantity').val();
+            const price = $('#price').val();
+            const totalValue = quantity * price;
+
+            const index = $('#productForm button[type="submit"]').data('id');
+
+            if (index === undefined) {
+                // Create new product
+                axios.post('/products', {
+                    productName,
+                    quantity,
+                    price,
+                    totalValue,
+                }).then(function () {
+                    fetchProducts();
+                    $('#productForm')[0].reset();
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            } else {
+                // Update existing product
+                axios.put(`/products/${index}`, {
+                    productName,
+                    quantity,
+                    price,
+                    totalValue,
+                }).then(function () {
+                    fetchProducts();
+                    $('#productForm')[0].reset();
+                    $('#productForm button[type="submit"]').text('Submit').removeData('id');
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            }
+        });
+
+
+    });
+</script>
+
+
 </html>
